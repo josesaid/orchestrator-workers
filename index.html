@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orchestrator-Workers | Said Olano</title>
+<meta name="description" content="Orchestrator-workers workflow pattern with Spring AI: a model plans the subtasks, workers execute them, and the results are assembled.">
+<style>
+  :root { --bg:#f5f1e8; --card:#ffffff; --card2:#f0f5fb; --text:#1d2433; --muted:#5b6578; --accent:#1f6fb2; --accent2:#2b8fd6; --line:#dde3ec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background: var(--bg); color:var(--text);
+         font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height:100vh; }
+  main { max-width: 880px; margin: 0 auto; padding: 56px 18px 72px; }
+  .tag { color:var(--accent); font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin:0 0 10px; }
+  h1 { font-size: clamp(30px, 5.5vw, 46px); line-height:1.15; margin:0 0 14px; }
+  h2 { font-size: 22px; margin: 0 0 12px; }
+  p.lead { color: var(--muted); font-size: 18px; margin: 0 0 24px; max-width: 680px; }
+  section { background: var(--card); border:1px solid var(--line); border-radius: 16px; padding: 24px; margin: 20px 0; }
+  .links { margin: 0 0 8px; }
+  .links a { display:inline-block; margin: 0 12px 8px 0; padding: 10px 18px; border-radius: 999px; text-decoration:none; font-weight:600; font-size:15px; }
+  .links a.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color:#ffffff; }
+  .links a.ghost { border:1px solid var(--accent); color: var(--accent); }
+  .fan { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:12px; list-style:none; padding:0; margin:0 0 12px; }
+  .fan li { background: var(--card2); border-left: 4px solid var(--accent); border-radius: 10px; padding: 14px; }
+  .fan b { display:block; color: var(--accent); font-family: ui-monospace, Menlo, monospace; margin-bottom: 4px; }
+  .join { text-align:center; font-family: ui-monospace, Menlo, monospace; color: var(--accent2); font-weight:600; margin: 6px 0; }
+  .two { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
+  .two div { background: var(--card2); border-radius: 10px; padding: 14px; }
+  table { width:100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align:left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; width: 34%; }
+  pre { background: #f7f9fc; border:1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x:auto; font: 13px/1.5 ui-monospace, Menlo, monospace; color:#1d2433; }
+  code { font-family: ui-monospace, Menlo, monospace; }
+  a { color: var(--accent); }
+  footer { margin-top: 32px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="tag">Spring AI · Agentic patterns</p>
+  <h1>Orchestrator-Workers Workflow</h1>
+  <p class="lead">A central model reads the task, decides which subtasks are needed, and hands each one to a worker. A Spring AI example of the orchestrator-workers pattern from "Building Effective Agents".</p>
+  <p class="links">
+    <a class="primary" href="https://github.com/josesaid/orchestrator-workers" target="_blank" rel="noopener">Source on GitHub</a>
+    <a class="ghost" href="https://josesaid.github.io/">All projects</a>
+  </p>
+
+  <section>
+    <h2>The flow</h2>
+    <ul class="fan">
+      <li><b>plan</b>The orchestrator analyzes the task and returns subtasks as structured output</li>
+      <li><b>execute</b>Each subtask goes to a worker prompt with its type and guidelines</li>
+      <li><b>assemble</b>The analysis and worker outputs are returned together</li>
+    </ul>
+    <div class="join">task → orchestrator → workers → result</div>
+  </section>
+
+  <section>
+    <h2>Two roles</h2>
+    <div class="two">
+      <div><b>Orchestrator</b><p>Decides the subtasks at runtime. Its output maps to the <code>OrchestratorResponse</code> record.</p></div>
+      <div><b>Workers</b><p>Each one produces the content for a single subtask, guided by the original task and its own description.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stack</h2>
+    <table>
+      <tr><th>Language</th><td>Java 17 or later</td></tr>
+      <tr><th>Framework</th><td>Spring Boot 4.1.1 with Spring AI</td></tr>
+      <tr><th>Models</th><td>Anthropic Claude through the Spring AI model starter</td></tr>
+      <tr><th>Output</th><td>Structured orchestrator output mapped to a record</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Run it</h2>
+    <pre><code>export ANTHROPIC_API_KEY=your-key
+./mvnw spring-boot:run</code></pre>
+    <p>The demo asks the orchestrator to plan a product description for an eco-friendly water bottle, runs the workers, and prints the results.</p>
+  </section>
+
+  <section>
+    <h2>Classes</h2>
+    <table>
+      <tr><th><code>OrchestratorWorkers</code></th><td>Runs the orchestrator, the worker calls, and returns a <code>FinalResponse</code>.</td></tr>
+      <tr><th><code>Task</code></th><td>Record with the subtask <code>type</code> and <code>description</code>.</td></tr>
+      <tr><th><code>Application</code></th><td>Wires the <code>ChatClient</code> and runs a sample task.</td></tr>
+    </table>
+  </section>
+
+  <footer>Said Olano · Spring AI agentic patterns</footer>
+</main>
+</body>
+</html>
